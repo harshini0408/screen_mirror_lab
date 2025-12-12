@@ -67,11 +67,13 @@ document.addEventListener('drop', (e) => {
 
 // Block EVERYTHING - Complete kiosk lockdown
 window.addEventListener('keydown', (e) => {
-  // Block ESC key - prevent fullscreen exit
-  if (e.key === 'Escape') {
+  // Block ESC key - prevent fullscreen exit (check both key and code)
+  if (e.key === 'Escape' || e.key === 'Esc' || e.code === 'Escape') {
     e.preventDefault();
-    console.log('🔒 ESC key blocked');
-    return;
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    console.log('🔒 ESC key blocked (preload)');
+    return false;
   }
   
   // Block Alt+Tab - prevent app switching

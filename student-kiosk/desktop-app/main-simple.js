@@ -193,6 +193,18 @@ function createWindow() {
     // Fullscreen is already enforced via window options in kiosk mode
     mainWindow.focus();
     
+    // 🔒 BLOCK ESC KEY AT WINDOW LEVEL - Additional protection
+    if (KIOSK_MODE && isKioskLocked) {
+      // Prevent fullscreen exit via ESC
+      mainWindow.webContents.on('before-input-event', (event, input) => {
+        if (input.key === 'Escape' || input.key === 'Esc') {
+          event.preventDefault();
+          console.log('🔒 ESC key blocked at window level');
+          return false;
+        }
+      });
+    }
+    
     // DevTools only in testing mode
     if (!KIOSK_MODE) {
       mainWindow.webContents.openDevTools();
@@ -204,6 +216,7 @@ function createWindow() {
     if (KIOSK_MODE) {
       console.log('🔒 FULL KIOSK MODE ACTIVE - System completely locked down!');
       console.log('🚫 All keyboard shortcuts blocked until student login');
+      console.log('🚫 ESC key blocked at multiple levels');
     } else {
       console.log('✅ TESTING MODE - Shortcuts available, DevTools enabled');
     }
@@ -217,6 +230,28 @@ function createWindow() {
       mainWindow.focus(); // Force focus back
     }
   });
+
+  // 🔒 PREVENT FULLSCREEN EXIT VIA ESC - Additional protection
+  if (KIOSK_MODE && isKioskLocked) {
+    mainWindow.on('leave-full-screen', (e) => {
+      if (isKioskLocked) {
+        console.log('🚫 Fullscreen exit blocked - forcing back to fullscreen');
+        setTimeout(() => {
+          mainWindow.setFullScreen(true);
+          mainWindow.focus();
+        }, 100);
+      }
+    });
+
+    mainWindow.on('blur', () => {
+      if (isKioskLocked) {
+        // Force focus back if window loses focus
+        setTimeout(() => {
+          mainWindow.focus();
+        }, 100);
+      }
+    });
+  }
 }
 
 function createTimerWindow(studentName, studentId) {
@@ -1023,7 +1058,8 @@ function blockKioskShortcuts() {
     'Alt+Shift+Tab',             // 🔒 Block reverse Alt+Tab
     'CommandOrControl+Tab',
     'F11',
-    'Escape'
+    'Escape',                     // 🔒 Block Escape key
+    'Esc'                         // 🔒 Block Esc (alternative form)
   ];
   
   // Block system shortcuts
@@ -1053,7 +1089,6 @@ function blockKioskShortcuts() {
     'Meta+Home',                 // 🔒 Minimize non-active
     
     // 🚫 ADDITIONAL ESCAPE ROUTES
-    'Esc',                       // 🔒 Escape key variant
     'Alt+Esc',                   // 🔒 Window cycling
     'Alt+F6',                    // 🔒 Cycle window elements
     
