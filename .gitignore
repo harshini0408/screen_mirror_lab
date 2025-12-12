@@ -1,0 +1,179 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# Electron build output
+dist/
+build/
+out/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# VS Code Local History
+.history/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Screenshots and uploads
+screenshots/
+uploads/
+temp/
+
+# Package lock files (choose one)
+package-lock.json
+# yarn.lock
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# Electron specific
+.electron-gyp
+.electron-prebuilt
+.electron-prebuilt-compile
+
+# TypeScript
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Output of 'npm pack'
+*.tgz
+
+# dotenv environment variables file
+.env
+
+# Secrets and credentials
+secrets/
+credentials/
+*.pem
+*.key
+*.crt
+
+# Application specific
+session-data/
+user-uploads/
+cache/
+
+# Project-specific files
+server-log.txt
+central-admin/server/server-log.txt
+central-admin/server/uploads/
+central-admin/server/reports/
+central-admin/server/session-csvs/
+
+# Electron installers and executables
+*.exe
+*.dmg
+*.AppImage
+*.deb
+*.rpm
+*.snap
+*.flatpak
+*.app
+student-kiosk/desktop-app/dist/
+student-kiosk/desktop-app/build/
+student-kiosk/desktop-app/out/
+
+# Email configuration (contains SMTP credentials)
+email-config.json
+email-config-tool.html
+
+# Server configuration (may contain sensitive data)
+server-config.json
+
+# Test credentials
+test-credentials-backup.json
+
+# CSV files (may contain student data)
+*.csv
+sample_timetable.csv
+
+# Backup files
+*.bak
+*.backup
+*~
+*.nsh.bak
+installer-backup/
+
+# MongoDB data (if running locally)
+data/
+mongodb-data/
+
+# Session files
+sessions/
+
+# Windows shortcuts
+*.lnk
+*.url
+
+# Certificates and keys (CRITICAL: Never commit!)
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+
+# Development documentation (optional - uncomment if you want to keep these private)
+# DEPLOYMENT_*.md
+# QUICK_START_*.md
+# TEST_*.md
+# FIX_*.md
+# *_COMPLETE.md
+# *_GUIDE.md

@@ -1,0 +1,96 @@
+{
+  "name": "college-lab-kiosk",
+  "version": "1.0.0",
+  "description": "College Lab Management System - Student Kiosk Application",
+  "main": "main-simple.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --inspect=9229",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac", 
+    "build-linux": "electron-builder --linux",
+    "build-portable": "electron-builder --win portable",
+    "dist": "electron-builder --publish=never",
+    "pack": "electron-builder --dir",
+    "release": "electron-builder --publish=always"
+  },
+  "keywords": [
+    "electron",
+    "kiosk",
+    "lab-management",
+    "screen-sharing",
+    "webrtc"
+  ],
+  "author": "College Lab Management Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^22.0.0",
+    "electron-builder": "^24.0.0"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0",
+    "socket.io-client": "^4.7.0",
+    "auto-launch": "^5.0.5"
+  },
+  "build": {
+    "appId": "com.college.lab.kiosk",
+    "productName": "College Lab Kiosk",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico",
+      "requestedExecutionLevel": "requireAdministrator",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "certificateFile": null,
+      "certificatePassword": null,
+      "signingHashAlgorithms": ["sha256"],
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Student Kiosk",
+      "runAfterFinish": true,
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico",
+      "deleteAppDataOnUninstall": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "include": "build/installer.nsh"
+    },
+    "portable": {
+      "artifactName": "${productName}-Portable-${version}.${ext}"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/college/lab-management-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/college/lab-management-system/issues"
+  },
+  "homepage": "https://github.com/college/lab-management-system#readme"
+}

@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏫 College Student Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            margin: 20px auto;
+            max-width: 1400px;
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .nav-tabs .nav-link {
+            border-radius: 15px 15px 0 0;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+        }
+        .tab-content {
+            padding: 30px;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #28a745;
+        }
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .file-upload-area {
+            border: 3px dashed #28a745;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: #f8fff8;
+            transition: all 0.3s ease;
+        }
+        .file-upload-area:hover {
+            background: #e8f5e8;
+            border-color: #20c997;
+        }
+        .student-table {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .btn-custom {
+            border-radius: 10px;
+            font-weight: bold;
+            padding: 10px 20px;
+        }
+        .search-box {
+            border-radius: 25px;
+            border: 2px solid #e9ecef;
+            padding: 12px 20px;
+        }
+        .search-box:focus {
+            border-color: #28a745;
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+        }
+        .filter-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin: 2px;
+            cursor: pointer;
+        }
+        .filter-badge:hover {
+            background: #20c997;
+        }
+        .progress-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="main-container">
+            <div class="header">
+                <h1><i class="fas fa-university"></i> College Student Management System</h1>
+                <p class="mb-0">Manage all students efficiently - Import, Export, Monitor</p>
+            </div>
+
+            <!-- Statistics Dashboard -->
+            <div class="container-fluid p-4">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number" id="totalStudents">0</div>
+                            <div>Total Students</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number" id="activeStudents">0</div>
+                            <div>Password Set</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number" id="pendingStudents">0</div>
+                            <div>Pending Setup</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number" id="onlineStudents">0</div>
+                            <div>Currently Online</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs" id="managementTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="import-tab" data-bs-toggle="tab" data-bs-target="#import" type="button">
+                        <i class="fas fa-upload"></i> Bulk Import
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="manage-tab" data-bs-toggle="tab" data-bs-target="#manage" type="button">
+                        <i class="fas fa-users"></i> Manage Students
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button">
+                        <i class="fas fa-user-plus"></i> Add Individual
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="export-tab" data-bs-toggle="tab" data-bs-target="#export" type="button">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="timetable-tab" data-bs-toggle="tab" data-bs-target="#timetable" type="button">
+                        <i class="fas fa-calendar-alt"></i> Timetable
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="managementTabContent">
+                <!-- Bulk Import Tab -->
+                <div class="tab-pane fade show active" id="import" role="tabpanel">
+                    <h3><i class="fas fa-upload text-success"></i> Bulk Student Import</h3>
+                    <p class="text-muted">Import multiple students from CSV or Excel files</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-success mb-3"></i>
+                                <h4>Upload Student Data File</h4>
+                                <p>Drag & drop or click to select CSV/Excel file</p>
+                                <small class="text-muted">Supported formats: .csv, .xlsx, .xls</small>
+                                <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" style="display: none;" onchange="handleFileUpload(event)">
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-outline-success btn-custom" onclick="downloadTemplate()">
+                                    <i class="fas fa-download"></i> Download Template
+                                </button>
+                                <button class="btn btn-success btn-custom" onclick="processUpload()" id="uploadBtn" disabled>
+                                    <i class="fas fa-upload"></i> Import Students
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-info-circle text-info"></i> Required Columns:</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item"><strong>studentId</strong> - Unique student ID (e.g., CS2021001)</li>
+                                <li class="list-group-item"><strong>name</strong> - Full name of student</li>
+                                <li class="list-group-item"><strong>email</strong> - Email address</li>
+                                <li class="list-group-item"><strong>dateOfBirth</strong> - Date of birth (YYYY-MM-DD)</li>
+                                <li class="list-group-item"><strong>department</strong> - Department name</li>
+                                <li class="list-group-item"><strong>year</strong> - Academic year (1, 2, 3, 4)</li>
+                            </ul>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> <strong>Note:</strong> This system works for all labs - no need to specify Lab ID!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="uploadProgress" class="progress-container" style="display: none;">
+                        <h5>Import Progress</h5>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar" id="progressBar"></div>
+                        </div>
+                        <div id="progressText">Preparing import...</div>
+                    </div>
+
+                    <div id="importResults" class="mt-4"></div>
+                </div>
+
+                <!-- Manage Students Tab -->
+                <div class="tab-pane fade" id="manage" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h3><i class="fas fa-users text-success"></i> Manage Students</h3>
+                        <div>
+                            <button class="btn btn-outline-danger btn-custom" onclick="clearAllStudents()">
+                                <i class="fas fa-trash"></i> Clear All
+                            </button>
+                            <button class="btn btn-success btn-custom" onclick="refreshStudentList()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control search-box" id="searchInput" 
+                                   placeholder="🔍 Search by name, ID, email, or department..." 
+                                   onkeyup="filterStudents()">
+                        </div>
+                        <div class="col-md-6">
+                            <div id="filterTags">
+                                <span class="filter-badge" onclick="filterByStatus('all')">All Students</span>
+                                <span class="filter-badge" onclick="filterByStatus('active')">Password Set</span>
+                                <span class="filter-badge" onclick="filterByStatus('pending')">Pending Setup</span>
+                                <span class="filter-badge" onclick="filterByDepartment('CS')">Computer Science</span>
+                                <span class="filter-badge" onclick="filterByDepartment('IT')">Information Technology</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Students Table -->
+                    <div class="table-responsive">
+                        <table class="table table-striped student-table">
+                            <thead class="table-success">
+                                <tr>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Department</th>
+                                    <th>Section</th>
+                                    <th>Year</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsTableBody">
+                                <tr>
+                                    <td colspan="8" class="text-center">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading students...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Add Individual Tab -->
+                <div class="tab-pane fade" id="add" role="tabpanel">
+                    <h3><i class="fas fa-user-plus text-success"></i> Add Individual Student</h3>
+                    <p class="text-muted">Add a single student manually</p>
+
+                    <form id="addStudentForm" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Student ID *</label>
+                            <input type="text" class="form-control" id="newStudentId" placeholder="e.g., CS2025001" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="newStudentName" placeholder="e.g., John Doe" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="newStudentEmail" placeholder="e.g., john@college.edu" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date of Birth *</label>
+                            <input type="date" class="form-control" id="newStudentDOB" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Department *</label>
+                            <select class="form-select" id="newStudentDept" required>
+                                <option value="">Loading departments...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Section *</label>
+                            <select class="form-select" id="newStudentSection" required>
+                                <option value="">Select Section</option>
+                                <option value="A">Section A</option>
+                                <option value="B">Section B</option>
+                                <option value="C">Section C</option>
+                                <option value="D">Section D</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Academic Year *</label>
+                            <select class="form-select" id="newStudentYear" required>
+                                <option value="">Select Year</option>
+                                <option value="1">1st Year</option>
+                                <option value="2">2nd Year</option>
+                                <option value="3">3rd Year</option>
+                                <option value="4">4th Year</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success btn-custom">
+                                <i class="fas fa-plus"></i> Add Student
+                            </button>
+                            <button type="reset" class="btn btn-outline-secondary btn-custom">
+                                <i class="fas fa-undo"></i> Reset Form
+                            </button>
+                        </div>
+                    </form>
+
+                    <div id="addStudentResult" class="mt-4"></div>
+                </div>
+
+                <!-- Export Data Tab -->
+                <div class="tab-pane fade" id="export" role="tabpanel">
+                    <h3><i class="fas fa-download text-success"></i> Export Student Data</h3>
+                    <p class="text-muted">Export student information for backup or analysis</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-file-csv text-success"></i> Export to CSV</h5>
+                                    <p>Export all student data to CSV format</p>
+                                    <button class="btn btn-success btn-custom" onclick="exportToCSV()">
+                                        <i class="fas fa-download"></i> Download CSV
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5><i class="fas fa-file-excel text-success"></i> Export to Excel</h5>
+                                    <p>Export all student data to Excel format</p>
+                                    <button class="btn btn-success btn-custom" onclick="exportToExcel()">
+                                        <i class="fas fa-download"></i> Download Excel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>Export Options</h5>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includePasswords" checked>
+                            <label class="form-check-label" for="includePasswords">
+                                Include password status
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeTimestamps" checked>
+                            <label class="form-check-label" for="includeTimestamps">
+                                Include creation timestamps
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timetable Upload Tab -->
+                <div class="tab-pane fade" id="timetable" role="tabpanel">
+                    <h3><i class="fas fa-calendar-alt text-success"></i> Timetable Management</h3>
+                    <p class="text-muted">Upload lab schedule CSV - sessions will start/end automatically</p>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="file-upload-area" onclick="document.getElementById('timetableFileInput').click()">
+                                <i class="fas fa-calendar-upload fa-3x text-success mb-3"></i>
+                                <h4>Upload Timetable CSV</h4>
+                                <p>Drag & drop or click to select CSV file</p>
+                                <small class="text-muted">Supported format: .csv</small>
+                                <input type="file" id="timetableFileInput" accept=".csv" style="display: none;" onchange="handleTimetableFileUpload(event)">
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary btn-custom" onclick="downloadTimetableTemplate()">
+                                    <i class="fas fa-download"></i> Download Template
+                                </button>
+                                <button class="btn btn-success btn-custom" onclick="processTimetableUpload()" id="timetableUploadBtn" disabled>
+                                    <i class="fas fa-upload"></i> Upload Timetable
+                                </button>
+                                <button class="btn btn-outline-danger btn-custom" onclick="clearTimetable()">
+                                    <i class="fas fa-trash"></i> Clear All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5><i class="fas fa-info-circle text-info"></i> Required Columns:</h5>
+                            <ul class="list-group">
+                                <li class="list-group-item"><strong>Session Date</strong> - Date (YYYY-MM-DD)</li>
+                                <li class="list-group-item"><strong>Start Time</strong> - Start time (HH:MM)</li>
+                                <li class="list-group-item"><strong>End Time</strong> - End time (HH:MM)</li>
+                                <li class="list-group-item"><strong>Faculty</strong> - Faculty name</li>
+                                <li class="list-group-item"><strong>Subject</strong> - Subject name</li>
+                                <li class="list-group-item"><strong>Lab ID</strong> - Lab identifier (e.g., CC1)</li>
+                                <li class="list-group-item"><strong>Year</strong> - Academic year (1, 2, 3, 4)</li>
+                                <li class="list-group-item"><strong>Department</strong> - Department name</li>
+                                <li class="list-group-item"><strong>Section</strong> - Section (A, B, C)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="timetableUploadProgress" class="progress-container" style="display: none;">
+                        <h5>Upload Progress</h5>
+                        <div class="progress mb-3">
+                            <div class="progress-bar bg-success" role="progressbar" id="timetableProgressBar"></div>
+                        </div>
+                        <div id="timetableProgressText">Preparing upload...</div>
+                    </div>
+
+                    <div id="timetableUploadResults" class="mt-4"></div>
+
+                    <div id="timetableList" class="mt-4" style="background: #f8f9fa; border-radius: 10px; padding: 20px;">
+                        <h5><i class="fas fa-list"></i> Upcoming Sessions</h5>
+                        <div id="timetableEntries">Loading timetable...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let SERVER_URL = 'http://localhost:7401'; // Will be auto-detected
+        let allStudents = [];
+        let filteredStudents = [];
+        let uploadedFile = null;
+
+        // Auto-detect server IP from config
+        async function detectServerUrl() {
+            console.log('🔍 Auto-detecting server URL...');
+            
+            // First, try current page origin (if accessed via server)
+            try {
+                const currentOrigin = window.location.origin;
+                if (currentOrigin && !currentOrigin.includes('file://')) {
+                    console.log(`🔍 Trying current origin: ${currentOrigin}/server-config.json`);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000);
+                    const response = await fetch(`${currentOrigin}/server-config.json`, {
+                        method: 'GET',
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const config = await response.json();
+                        const detectedUrl = `http://${config.serverIp}:${config.serverPort}`;
+                        console.log(`✅ Server detected via current origin: ${detectedUrl}`);
+                        SERVER_URL = detectedUrl;
+                        updateServerStatus(detectedUrl, true);
+                        return detectedUrl;
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Current origin detection failed:', error.message);
+            }
+            
+            // Try common server locations
+            const possibleUrls = [
+                'http://localhost:7401',
+                'http://127.0.0.1:7401',
+                'http://192.168.0.102:7401',
+                'http://192.168.1.100:7401',
+                'http://192.168.29.212:7401'
+            ];
+            
+            // Try to fetch config from each possible location
+            for (const baseUrl of possibleUrls) {
+                try {
+                    console.log(`🔍 Trying: ${baseUrl}/server-config.json`);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000);
+                    const response = await fetch(`${baseUrl}/server-config.json`, {
+                        method: 'GET',
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    
+                    if (response.ok) {
+                        const config = await response.json();
+                        const detectedUrl = `http://${config.serverIp}:${config.serverPort}`;
+                        console.log(`✅ Server detected: ${detectedUrl}`);
+                        SERVER_URL = detectedUrl;
+                        updateServerStatus(detectedUrl, true);
+                        return detectedUrl;
+                    }
+                } catch (error) {
+                    console.log(`⚠️ ${baseUrl} not available:`, error.message);
+                    continue;
+                }
+            }
+            
+            // If all failed, try to get current page's hostname
+            try {
+                const currentHost = window.location.hostname;
+                if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+                    const fallbackUrl = `http://${currentHost}:7401`;
+                    console.log(`🔄 Trying current hostname: ${fallbackUrl}`);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 2000);
+                    const response = await fetch(`${fallbackUrl}/server-config.json`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (response.ok) {
+                        const config = await response.json();
+                        const detectedUrl = `http://${config.serverIp}:${config.serverPort}`;
+                        console.log(`✅ Server detected via hostname: ${detectedUrl}`);
+                        SERVER_URL = detectedUrl;
+                        updateServerStatus(detectedUrl, true);
+                        return detectedUrl;
+                    }
+                }
+            } catch (error) {
+                console.log('⚠️ Hostname detection failed:', error.message);
+            }
+            
+            // Final fallback: try localhost
+            console.log('⚠️ Auto-detection failed, using localhost as fallback');
+            SERVER_URL = 'http://localhost:7401';
+            updateServerStatus(SERVER_URL, false);
+            return SERVER_URL;
+        }
+        
+        // Update server status indicator
+        function updateServerStatus(url, isDetected) {
+            // Add status indicator to header if it doesn't exist
+            let statusIndicator = document.getElementById('serverStatus');
+            if (!statusIndicator) {
+                statusIndicator = document.createElement('div');
+                statusIndicator.id = 'serverStatus';
+                statusIndicator.style.cssText = 'position: fixed; top: 10px; right: 10px; padding: 10px 15px; background: rgba(0,0,0,0.7); color: white; border-radius: 5px; z-index: 9999; font-size: 12px;';
+                document.body.appendChild(statusIndicator);
+            }
+            
+            statusIndicator.innerHTML = isDetected 
+                ? `✅ Server: ${url}`
+                : `⚠️ Server: ${url} (Fallback - Check Connection)`;
+            statusIndicator.style.background = isDetected ? 'rgba(40, 167, 69, 0.9)' : 'rgba(255, 193, 7, 0.9)';
+        }
+
+        // Load departments from API
+        async function loadDepartments() {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/departments`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    console.error('Failed to load departments:', data.error);
+                    return;
+                }
+                
+                const select = document.getElementById('newStudentDept');
+                if (!select) return;
+                
+                select.innerHTML = '<option value="">Select Department</option>';
+                
+                data.departments.forEach(dept => {
+                    const option = document.createElement('option');
+                    option.value = dept.code;        // Send department code to backend
+                    option.textContent = dept.name;  // Display full name to user
+                    select.appendChild(option);
+                });
+                
+                console.log(`✅ Loaded ${data.departments.length} departments`);
+            } catch (err) {
+                console.error('Error loading departments:', err);
+                // Fallback to static options if API fails
+                const select = document.getElementById('newStudentDept');
+                if (select) {
+                    select.innerHTML = `
+                        <option value="">Select Department</option>
+                        <option value="CSE">Computer Science and Engineering</option>
+                        <option value="ECE">Electronics and Communication Engineering</option>
+                        <option value="EEE">Electrical and Electronics Engineering</option>
+                        <option value="ICE">Instrumentation and Control Engineering</option>
+                        <option value="VLSI">VLSI Design</option>
+                        <option value="MECH">Mechanical Engineering</option>
+                        <option value="CIVIL">Civil Engineering</option>
+                    `;
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Auto-detect server first
+            await detectServerUrl();
+            
+            // Load departments
+            await loadDepartments();
+            
+            // Then load data
+            refreshStudentList();
+            updateStats();
+        });
+
+        // File upload handling
+        function handleFileUpload(event) {
+            uploadedFile = event.target.files[0];
+            if (uploadedFile) {
+                document.getElementById('uploadBtn').disabled = false;
+                showMessage('importResults', `File selected: ${uploadedFile.name}`, 'info');
+            }
+        }
+
+        // Download template
+        function downloadTemplate() {
+            const csvContent = `studentId,name,email,dateOfBirth,department,section,year
+CS2025001,John Doe,john.doe@college.edu,2000-01-15,Computer Science and Engineering,A,3
+CS2025002,Jane Smith,jane.smith@college.edu,2000-05-20,Computer Science and Engineering,B,3
+ECE2025001,Bob Johnson,bob.johnson@college.edu,1999-12-10,Electronics and Communication Engineering,A,3`;
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'student_template.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Process file upload
+        async function processUpload() {
+            if (!uploadedFile) {
+                showMessage('importResults', 'Please select a file first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', uploadedFile);
+
+            document.getElementById('uploadProgress').style.display = 'block';
+            updateProgress(10, 'Reading file...');
+
+            try {
+                console.log('📤 Uploading file to:', `${SERVER_URL}/api/import-students`);
+                
+                const response = await fetch(`${SERVER_URL}/api/import-students`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                updateProgress(50, 'Processing students...');
+
+                const result = await response.json();
+                console.log('✅ Import response:', result);
+
+                updateProgress(100, 'Import completed!');
+
+                if (result.success) {
+                    showMessage('importResults', 
+                        `✅ Import successful!<br>
+                        📊 Total processed: ${result.totalProcessed}<br>
+                        ✅ Successfully imported: ${result.successful}<br>
+                        ❌ Failed: ${result.failed}<br>
+                        ${result.errors.length > 0 ? '<br><strong>Errors:</strong><br>' + result.errors.join('<br>') : ''}`, 
+                        'success');
+                    
+                    refreshStudentList();
+                    updateStats();
+                } else {
+                    showMessage('importResults', `❌ Import failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Import error:', error);
+                showMessage('importResults', `❌ Network error: ${error.message}<br><small>Check if server is running at ${SERVER_URL}</small>`, 'error');
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('uploadProgress').style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Update progress bar
+        function updateProgress(percent, text) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            progressBar.style.width = percent + '%';
+            progressBar.setAttribute('aria-valuenow', percent);
+            progressText.textContent = text;
+        }
+
+        // Refresh student list
+        async function refreshStudentList() {
+            try {
+                console.log('🔄 Fetching students from:', `${SERVER_URL}/api/debug-students`);
+                
+                const response = await fetch(`${SERVER_URL}/api/debug-students`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Students fetched:', data.count, 'students');
+
+                if (data.success) {
+                    allStudents = data.students;
+                    filteredStudents = [...allStudents];
+                    displayStudents();
+                    updateStats();
+                } else {
+                    console.error('❌ Server error:', data.error);
+                    const tbody = document.getElementById('studentsTableBody');
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error: ${data.error || 'Failed to load students'}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('❌ Network error:', error);
+                const tbody = document.getElementById('studentsTableBody');
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Network Error: ${error.message}<br>
+                    <small>Make sure server is running at ${SERVER_URL}</small>
+                </td></tr>`;
+            }
+        }
+
+        // Display students in table
+        function displayStudents() {
+            const tbody = document.getElementById('studentsTableBody');
+            
+            if (filteredStudents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center">No students found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = filteredStudents.map(student => `
+                <tr>
+                    <td><strong>${student.studentId}</strong></td>
+                    <td>${student.name}</td>
+                    <td>${student.email}</td>
+                    <td>${student.department || 'N/A'}</td>
+                    <td>${student.section || 'N/A'}</td>
+                    <td>${student.year}</td>
+                    <td>
+                        ${student.isPasswordSet ? 
+                            '<span class="badge bg-success">Password Set</span>' : 
+                            '<span class="badge bg-warning">Pending Setup</span>'
+                        }
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editStudent('${student.studentId}')">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent('${student.studentId}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter functions
+        function filterStudents() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            filteredStudents = allStudents.filter(student => 
+                student.name.toLowerCase().includes(searchTerm) ||
+                student.studentId.toLowerCase().includes(searchTerm) ||
+                student.email.toLowerCase().includes(searchTerm) ||
+                student.department.toLowerCase().includes(searchTerm)
+            );
+            displayStudents();
+        }
+
+        function filterByStatus(status) {
+            if (status === 'all') {
+                filteredStudents = [...allStudents];
+            } else if (status === 'active') {
+                filteredStudents = allStudents.filter(s => s.isPasswordSet);
+            } else if (status === 'pending') {
+                filteredStudents = allStudents.filter(s => !s.isPasswordSet);
+            }
+            displayStudents();
+        }
+
+        function filterByDepartment(dept) {
+            filteredStudents = allStudents.filter(s => s.department.includes(dept));
+            displayStudents();
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('totalStudents').textContent = allStudents.length;
+            document.getElementById('activeStudents').textContent = allStudents.filter(s => s.isPasswordSet).length;
+            document.getElementById('pendingStudents').textContent = allStudents.filter(s => !s.isPasswordSet).length;
+            document.getElementById('onlineStudents').textContent = '0'; // TODO: Implement online tracking
+        }
+
+        // Add individual student
+        document.getElementById('addStudentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const studentData = {
+                studentId: document.getElementById('newStudentId').value.toUpperCase(),
+                name: document.getElementById('newStudentName').value,
+                email: document.getElementById('newStudentEmail').value,
+                dateOfBirth: document.getElementById('newStudentDOB').value,
+                department: document.getElementById('newStudentDept').value,
+                section: document.getElementById('newStudentSection').value,
+                year: parseInt(document.getElementById('newStudentYear').value)
+            };
+
+            try {
+                console.log('➕ Adding student:', studentData);
+                
+                const response = await fetch(`${SERVER_URL}/api/add-student`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Add student response:', result);
+
+                if (result.success) {
+                    showMessage('addStudentResult', '✅ Student added successfully!', 'success');
+                    document.getElementById('addStudentForm').reset();
+                    refreshStudentList();
+                } else {
+                    showMessage('addStudentResult', `❌ Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Add student error:', error);
+                showMessage('addStudentResult', `❌ Network error: ${error.message}<br><small>Server: ${SERVER_URL}</small>`, 'error');
+            }
+        });
+
+        // Export functions
+        function exportToCSV() {
+            const csvContent = [
+                ['Student ID', 'Name', 'Email', 'Date of Birth', 'Department', 'Year', 'Password Set'],
+                ...allStudents.map(s => [
+                    s.studentId, s.name, s.email, 
+                    new Date(s.dateOfBirth).toISOString().split('T')[0],
+                    s.department, s.year, s.isPasswordSet ? 'Yes' : 'No'
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `students_export_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function exportToExcel() {
+            // For now, export as CSV (Excel can open CSV files)
+            exportToCSV();
+        }
+
+        // Utility functions
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            const alertClass = type === 'success' ? 'alert-success' : 
+                             type === 'error' ? 'alert-danger' : 'alert-info';
+            element.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+        }
+
+        async function editStudent(studentId) {
+            const student = allStudents.find(s => s.studentId === studentId);
+            if (!student) return;
+
+            const newName = prompt('Enter new name:', student.name);
+            if (!newName) return;
+
+            const newEmail = prompt('Enter new email:', student.email);
+            if (!newEmail) return;
+
+            const newDept = prompt('Enter new department:', student.department || '');
+            if (!newDept) return;
+
+            const newSection = prompt('Enter new section (A, B, or C):', student.section || 'A');
+            if (!newSection) return;
+
+            const newYear = prompt('Enter new year (1-4):', student.year);
+            if (!newYear) return;
+
+            try {
+                console.log('✏️ Updating student:', studentId);
+                
+                const response = await fetch(`${SERVER_URL}/api/update-student/${studentId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: newName,
+                        email: newEmail,
+                        department: newDept,
+                        section: newSection,
+                        year: parseInt(newYear)
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Update response:', result);
+
+                if (result.success) {
+                    alert('✅ Student updated successfully!');
+                    refreshStudentList();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Update error:', error);
+                alert('❌ Network error: ' + error.message + '\n\nMake sure server is running at ' + SERVER_URL);
+            }
+        }
+
+        async function deleteStudent(studentId) {
+            if (!confirm(`⚠️ Are you sure you want to delete student ${studentId}?\n\nThis action cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                console.log('🗑️ Deleting student:', studentId);
+                
+                const response = await fetch(`${SERVER_URL}/api/delete-student/${studentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Delete response:', result);
+
+                if (result.success) {
+                    alert('✅ Student deleted successfully!');
+                    refreshStudentList();
+                    updateStats();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Delete error:', error);
+                alert('❌ Network error: ' + error.message + '\n\nMake sure server is running at ' + SERVER_URL);
+            }
+        }
+
+        async function clearAllStudents() {
+            if (!confirm('⚠️ Are you sure you want to delete ALL students?\n\nThis action cannot be undone!')) {
+                return;
+            }
+
+            if (!confirm('⚠️⚠️ FINAL WARNING: This will permanently delete ALL student data!\n\nAre you absolutely sure?')) {
+                return;
+            }
+
+            try {
+                console.log('🗑️ Clearing all students...');
+                
+                const response = await fetch(`${SERVER_URL}/api/clear-all-students`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Clear all response:', result);
+
+                if (result.success) {
+                    alert(`✅ Successfully deleted ${result.deletedCount} students!`);
+                    refreshStudentList();
+                    updateStats();
+                } else {
+                    alert('❌ Error: ' + result.error);
+                }
+            } catch (error) {
+                console.error('❌ Clear all error:', error);
+                alert('❌ Network error: ' + error.message + '\n\nMake sure server is running at ' + SERVER_URL);
+            }
+        }
+
+        // =================================================================
+        // TIMETABLE MANAGEMENT FUNCTIONS
+        // =================================================================
+
+        let uploadedTimetableFile = null;
+
+        // Handle timetable file upload
+        function handleTimetableFileUpload(event) {
+            uploadedTimetableFile = event.target.files[0];
+            if (uploadedTimetableFile) {
+                document.getElementById('timetableUploadBtn').disabled = false;
+                showMessage('timetableUploadResults', `File selected: ${uploadedTimetableFile.name}`, 'info');
+            }
+        }
+
+        // Download timetable template
+        async function downloadTimetableTemplate() {
+            try {
+                console.log('📥 Downloading timetable template...');
+                
+                const response = await fetch(`${SERVER_URL}/api/timetable-template`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'timetable-template.csv';
+                a.click();
+                window.URL.revokeObjectURL(url);
+                
+                showMessage('timetableUploadResults', '✅ Timetable template downloaded!', 'success');
+            } catch (error) {
+                console.error('❌ Download template error:', error);
+                showMessage('timetableUploadResults', `❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Process timetable upload
+        async function processTimetableUpload() {
+            if (!uploadedTimetableFile) {
+                showMessage('timetableUploadResults', 'Please select a file first', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('timetableFile', uploadedTimetableFile);
+
+            document.getElementById('timetableUploadProgress').style.display = 'block';
+            updateTimetableProgress(10, 'Reading file...');
+
+            try {
+                console.log('📤 Uploading timetable to:', `${SERVER_URL}/api/upload-timetable`);
+                
+                const response = await fetch(`${SERVER_URL}/api/upload-timetable`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                updateTimetableProgress(50, 'Processing timetable entries...');
+
+                const result = await response.json();
+                console.log('✅ Timetable upload response:', result);
+
+                updateTimetableProgress(100, 'Upload completed!');
+
+                if (result.success) {
+                    const successCount = result.successCount || 0;
+                    const errorCount = result.errorCount || 0;
+                    
+                    showMessage('timetableUploadResults', 
+                        `✅ Timetable uploaded successfully!<br>
+                        📊 Successfully imported: ${successCount} entries<br>
+                        ${errorCount > 0 ? `❌ Failed: ${errorCount} entries<br>` : ''}
+                        ${result.errors && result.errors.length > 0 ? '<br><strong>Errors:</strong><br>' + result.errors.map(e => e.error || e).join('<br>') : ''}`, 
+                        'success');
+                    
+                    loadTimetable();
+                } else {
+                    showMessage('timetableUploadResults', `❌ Upload failed: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Timetable upload error:', error);
+                showMessage('timetableUploadResults', `❌ Network error: ${error.message}<br><small>Check if server is running at ${SERVER_URL}</small>`, 'error');
+            } finally {
+                setTimeout(() => {
+                    document.getElementById('timetableUploadProgress').style.display = 'none';
+                }, 2000);
+            }
+        }
+
+        // Update timetable progress bar
+        function updateTimetableProgress(percent, text) {
+            const progressBar = document.getElementById('timetableProgressBar');
+            const progressText = document.getElementById('timetableProgressText');
+            progressBar.style.width = percent + '%';
+            progressBar.setAttribute('aria-valuenow', percent);
+            progressText.textContent = text;
+        }
+
+        // Load and display timetable entries
+        async function loadTimetable() {
+            const entriesDiv = document.getElementById('timetableEntries');
+            
+            try {
+                entriesDiv.innerHTML = '<p style="color: #6c757d;">Loading timetable...</p>';
+                
+                const response = await fetch(`${SERVER_URL}/api/timetable?upcoming=true`);
+                
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('✅ Timetable loaded:', data);
+
+                if (data.success && data.entries && data.entries.length > 0) {
+                    entriesDiv.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead class="table-success">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Subject</th>
+                                        <th>Faculty</th>
+                                        <th>Lab ID</th>
+                                        <th>Year</th>
+                                        <th>Department</th>
+                                        <th>Section</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.entries.map(entry => `
+                                        <tr>
+                                            <td>${new Date(entry.sessionDate).toLocaleDateString()}</td>
+                                            <td>${entry.startTime} - ${entry.endTime}</td>
+                                            <td>${entry.subject}</td>
+                                            <td>${entry.faculty}</td>
+                                            <td>${entry.labId}</td>
+                                            <td>${entry.year}</td>
+                                            <td>${entry.department}</td>
+                                            <td>${entry.section || 'A'}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                } else {
+                    entriesDiv.innerHTML = '<p style="color: #6c757d;">No upcoming sessions. Upload a timetable to get started!</p>';
+                }
+            } catch (error) {
+                console.error('❌ Error loading timetable:', error);
+                entriesDiv.innerHTML = `<p style="color: #dc3545;">Error loading timetable: ${error.message}</p>`;
+            }
+        }
+
+        // Clear all timetable entries
+        async function clearTimetable() {
+            if (!confirm('⚠️ Are you sure you want to delete ALL timetable entries?\n\nThis action cannot be undone!')) {
+                return;
+            }
+
+            try {
+                console.log('🗑️ Clearing timetable...');
+                
+                const response = await fetch(`${SERVER_URL}/api/timetable/clear-all`, {
+                    method: 'POST'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                console.log('✅ Clear timetable response:', result);
+
+                if (result.success) {
+                    showMessage('timetableUploadResults', '✅ All timetable entries cleared successfully!', 'success');
+                    loadTimetable();
+                } else {
+                    showMessage('timetableUploadResults', `❌ Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('❌ Clear timetable error:', error);
+                showMessage('timetableUploadResults', `❌ Network error: ${error.message}`, 'error');
+            }
+        }
+
+        // Load timetable on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load timetable after a short delay to ensure server is detected
+            setTimeout(() => {
+                loadTimetable();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

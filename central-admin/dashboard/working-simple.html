@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ Lab Screen Monitor - Simple</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .sessions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .session-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 2px solid #e9ecef;
+        }
+        
+        .session-info {
+            margin-bottom: 15px;
+        }
+        
+        .session-info h4 {
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .session-info p {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 2px 0;
+        }
+        
+        .video-container {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .no-sessions {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            margin: 40px 0;
+        }
+        
+        /* Fullscreen Modal Styles */
+        .fullscreen-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .fullscreen-modal.active {
+            display: flex;
+        }
+        
+        .fullscreen-content {
+            position: relative;
+            width: 90vw;
+            height: 90vh;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .fullscreen-video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .fullscreen-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 20px;
+            z-index: 10;
+        }
+        
+        .fullscreen-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 20px;
+            z-index: 10;
+        }
+        
+        .close-fullscreen {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 11;
+        }
+        
+        .close-fullscreen:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-expand {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-expand:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖥️ Lab Screen Monitor</h1>
+        <p>Real-time student screen monitoring with WebRTC</p>
+    </div>
+    
+    <div id="status" class="status info">
+        🔄 Connecting to server...
+    </div>
+    
+    <div id="sessions-container">
+        <div class="no-sessions">
+            📱 No active sessions. Students need to login first.
+        </div>
+    </div>
+
+    <!-- Fullscreen Modal -->
+    <div id="fullscreen-modal" class="fullscreen-modal">
+        <button class="close-fullscreen" onclick="closeFullscreen()">×</button>
+        <div class="fullscreen-content">
+            <div class="fullscreen-header">
+                <h3 id="fullscreen-title">Student Screen Monitor</h3>
+                <p id="fullscreen-info">Session details</p>
+            </div>
+            <video id="fullscreen-video" class="fullscreen-video" autoplay muted></video>
+            <div class="fullscreen-controls">
+                <button class="btn btn-danger" onclick="closeFullscreen()">
+                    ⏹️ Close Fullscreen
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        let socket;
+        let activeSessions = new Map();
+        let peerConnections = new Map();
+        let serverUrl = null;
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = `status ${type}`;
+            statusDiv.innerHTML = message;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        // Load server URL from config file
+        async function loadServerUrl() {
+            try {
+                const response = await fetch('/server-config.json');
+                if (response.ok) {
+                    const config = await response.json();
+                    serverUrl = `http://${config.serverIp}:${config.serverPort}`;
+                    console.log('✅ Server URL loaded from config:', serverUrl);
+                    console.log('📅 Config last updated:', config.lastUpdated);
+                    return serverUrl;
+                }
+            } catch (error) {
+                console.warn('⚠️ Could not load config, trying current origin:', error.message);
+            }
+            // Fallback to current origin
+            serverUrl = window.location.origin;
+            console.log('⚠️ Using current origin as fallback:', serverUrl);
+            return serverUrl;
+        }
+        
+        async function initializeSocket() {
+            updateStatus('🔌 Connecting to server...', 'info');
+            
+            // Load server URL first
+            if (!serverUrl) {
+                await loadServerUrl();
+            }
+            
+            socket = io(serverUrl);
+            
+            socket.on('connect', () => {
+                updateStatus('✅ Connected to server', 'success');
+                console.log('🔌 Socket connected:', socket.id);
+                console.log('🌐 Connected to:', serverUrl);
+                
+                // Register as admin
+                socket.emit('register-admin');
+                
+                // Request current sessions
+                socket.emit('get-active-sessions');
+            });
+            
+            socket.on('disconnect', () => {
+                updateStatus('❌ Disconnected from server', 'error');
+                console.log('🔌 Socket disconnected');
+            });
+            
+            socket.on('connect_error', (error) => {
+                updateStatus(`❌ Connection error: ${error.message}`, 'error');
+                console.error('🔌 Socket connection error:', error);
+            });
+            
+            // Listen for session updates
+            socket.on('session-created', (sessionData) => {
+                console.log('📱 New session created:', sessionData);
+                addSession(sessionData);
+            });
+            
+            socket.on('session-ended', (sessionData) => {
+                console.log('📱 Session ended:', sessionData);
+                removeSession(sessionData.sessionId);
+            });
+            
+            socket.on('active-sessions', (sessions) => {
+                console.log('📱 Active sessions received:', sessions);
+                console.log('📱 Number of sessions:', sessions ? sessions.length : 0);
+                
+                if (sessions && sessions.length > 0) {
+                    sessions.forEach((session, index) => {
+                        console.log(`📱 Session ${index}:`, session);
+                        console.log(`📱 Session ${index} ID options:`, {
+                            sessionId: session.sessionId,
+                            _id: session._id,
+                            id: session.id
+                        });
+                    });
+                }
+                
+                displaySessions(sessions);
+            });
+            
+            // WebRTC signaling
+            socket.on('webrtc-answer', ({ answer, sessionId }) => {
+                console.log('📹 WebRTC answer received for session:', sessionId);
+                handleWebRTCAnswer(sessionId, answer);
+            });
+            
+            socket.on('webrtc-ice-candidate', ({ candidate, sessionId }) => {
+                console.log('🧊 ICE candidate received for session:', sessionId);
+                handleICECandidate(sessionId, candidate);
+            });
+            
+            socket.on('webrtc-error', ({ sessionId, error }) => {
+                console.error('❌ WebRTC error for session:', sessionId, error);
+                updateStatus(`❌ WebRTC error: ${error}`, 'error');
+            });
+        }
+        
+        function displaySessions(sessions) {
+            const container = document.getElementById('sessions-container');
+            
+            if (!sessions || sessions.length === 0) {
+                container.innerHTML = '<div class="no-sessions">📱 No active sessions. Students need to login first.</div>';
+                return;
+            }
+            
+            const grid = document.createElement('div');
+            grid.className = 'sessions-grid';
+            
+            sessions.forEach(session => {
+                const sessionId = session.sessionId || session._id || session.id;
+                console.log('📋 Processing session:', session);
+                console.log('📋 Session ID resolved to:', sessionId);
+                
+                if (sessionId) {
+                    const card = createSessionCard(session);
+                    if (card) {
+                        grid.appendChild(card);
+                        activeSessions.set(sessionId, session);
+                    }
+                } else {
+                    console.error('❌ Skipping session with no valid ID:', session);
+                }
+            });
+            
+            container.innerHTML = '';
+            container.appendChild(grid);
+        }
+        
+        function addSession(sessionData) {
+            // Handle different session ID formats
+            const sessionId = sessionData.sessionId || sessionData._id || sessionData.id;
+            
+            console.log('➕ Adding session:', sessionData);
+            console.log('➕ Session ID resolved to:', sessionId);
+            
+            if (!sessionId) {
+                console.error('❌ Cannot add session - no valid session ID:', sessionData);
+                return;
+            }
+            
+            activeSessions.set(sessionId, sessionData);
+            
+            const container = document.getElementById('sessions-container');
+            let grid = container.querySelector('.sessions-grid');
+            
+            if (!grid) {
+                grid = document.createElement('div');
+                grid.className = 'sessions-grid';
+                container.innerHTML = '';
+                container.appendChild(grid);
+            }
+            
+            const card = createSessionCard(sessionData);
+            if (card) {
+                grid.appendChild(card);
+            }
+        }
+        
+        function removeSession(sessionId) {
+            activeSessions.delete(sessionId);
+            
+            // Clean up WebRTC connection
+            if (peerConnections.has(sessionId)) {
+                peerConnections.get(sessionId).close();
+                peerConnections.delete(sessionId);
+            }
+            
+            // Remove from DOM
+            const card = document.getElementById(`session-${sessionId}`);
+            if (card) {
+                card.remove();
+            }
+            
+            // Check if no sessions left
+            const grid = document.querySelector('.sessions-grid');
+            if (grid && grid.children.length === 0) {
+                document.getElementById('sessions-container').innerHTML = 
+                    '<div class="no-sessions">📱 No active sessions. Students need to login first.</div>';
+            }
+        }
+        
+        function createSessionCard(session) {
+            // Handle different session ID formats
+            const sessionId = session.sessionId || session._id || session.id;
+            
+            console.log('🔍 Creating session card for:', session);
+            console.log('🔍 Session ID resolved to:', sessionId);
+            
+            if (!sessionId) {
+                console.error('❌ No valid session ID found in session object:', session);
+                return null;
+            }
+            
+            const card = document.createElement('div');
+            card.className = 'session-card';
+            card.id = `session-${sessionId}`;
+            
+            card.innerHTML = `
+                <div class="session-info">
+                    <h4>👤 ${session.studentName}</h4>
+                    <p><strong>ID:</strong> ${session.studentId}</p>
+                    <p><strong>System:</strong> ${session.systemNumber}</p>
+                    <p><strong>Login:</strong> ${new Date(session.loginTime).toLocaleTimeString()}</p>
+                    <p><strong>Session:</strong> ${sessionId}</p>
+                </div>
+                <div class="video-container" id="video-${sessionId}">
+                    <div class="video-placeholder">
+                        📺 Click "Watch Screen" to start monitoring
+                    </div>
+                </div>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="startMonitoring('${sessionId}')">
+                        📹 Watch Screen
+                    </button>
+                    <button class="btn btn-expand" onclick="expandScreen('${sessionId}')">
+                        🔍 Expand
+                    </button>
+                    <button class="btn btn-danger" onclick="stopMonitoring('${sessionId}')">
+                        ⏹️ Stop
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        async function startMonitoring(sessionId) {
+            try {
+                console.log('📹 Starting monitoring for session:', sessionId);
+                updateStatus(`📹 Starting screen monitoring for session ${sessionId}...`, 'info');
+                
+                const videoContainer = document.getElementById(`video-${sessionId}`);
+                if (!videoContainer) {
+                    throw new Error('Video container not found');
+                }
+                
+                // Create video element
+                const video = document.createElement('video');
+                video.autoplay = true;
+                video.muted = true;
+                video.style.width = '100%';
+                video.style.height = '100%';
+                video.style.objectFit = 'cover';
+                
+                videoContainer.innerHTML = '';
+                videoContainer.appendChild(video);
+                
+                // Create WebRTC peer connection
+                const peerConnection = new RTCPeerConnection({
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                });
+                
+                peerConnections.set(sessionId, peerConnection);
+                
+                // Handle remote stream
+                peerConnection.ontrack = (event) => {
+                    console.log('📺 Received remote stream for session:', sessionId);
+                    video.srcObject = event.streams[0];
+                    updateStatus(`✅ Screen monitoring active for session ${sessionId}`, 'success');
+                };
+                
+                // Handle ICE candidates
+                peerConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        console.log('🧊 Sending ICE candidate for session:', sessionId);
+                        socket.emit('webrtc-ice-candidate', {
+                            candidate: event.candidate,
+                            sessionId: sessionId
+                        });
+                    }
+                };
+                
+                // Handle connection state changes
+                peerConnection.onconnectionstatechange = () => {
+                    console.log(`🔗 Connection state for ${sessionId}:`, peerConnection.connectionState);
+                    if (peerConnection.connectionState === 'connected') {
+                        updateStatus(`✅ Screen monitoring connected for session ${sessionId}`, 'success');
+                    } else if (peerConnection.connectionState === 'failed') {
+                        updateStatus(`❌ Screen monitoring failed for session ${sessionId}`, 'error');
+                    }
+                };
+                
+                // Create offer
+                const offer = await peerConnection.createOffer();
+                await peerConnection.setLocalDescription(offer);
+                
+                console.log('📤 Sending WebRTC offer for session:', sessionId);
+                socket.emit('admin-offer', {
+                    offer: offer,
+                    sessionId: sessionId,
+                    adminSocketId: socket.id
+                });
+                
+            } catch (error) {
+                console.error('❌ Error starting monitoring:', error);
+                updateStatus(`❌ Failed to start monitoring: ${error.message}`, 'error');
+            }
+        }
+        
+        function stopMonitoring(sessionId) {
+            console.log('⏹️ Stopping monitoring for session:', sessionId);
+            
+            if (peerConnections.has(sessionId)) {
+                peerConnections.get(sessionId).close();
+                peerConnections.delete(sessionId);
+            }
+            
+            const videoContainer = document.getElementById(`video-${sessionId}`);
+            if (videoContainer) {
+                videoContainer.innerHTML = `
+                    <div class="video-placeholder">
+                        📺 Click "Watch Screen" to start monitoring
+                    </div>
+                `;
+            }
+            
+            updateStatus(`⏹️ Stopped monitoring session ${sessionId}`, 'info');
+        }
+        
+        async function handleWebRTCAnswer(sessionId, answer) {
+            try {
+                const peerConnection = peerConnections.get(sessionId);
+                if (peerConnection) {
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+                    console.log('✅ WebRTC answer processed for session:', sessionId);
+                }
+            } catch (error) {
+                console.error('❌ Error handling WebRTC answer:', error);
+            }
+        }
+        
+        async function handleICECandidate(sessionId, candidate) {
+            try {
+                const peerConnection = peerConnections.get(sessionId);
+                if (peerConnection) {
+                    await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                    console.log('✅ ICE candidate added for session:', sessionId);
+                }
+            } catch (error) {
+                console.error('❌ Error handling ICE candidate:', error);
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Working Simple Admin Dashboard Loading...');
+            initializeSocket();
+        });
+        
+        // Fullscreen functionality
+        function expandScreen(sessionId) {
+            const session = activeSessions.get(sessionId);
+            if (!session) {
+                updateStatus('❌ Session not found', 'error');
+                return;
+            }
+            
+            const videoContainer = document.getElementById(`video-${sessionId}`);
+            const video = videoContainer.querySelector('video');
+            
+            if (!video || !video.srcObject) {
+                updateStatus('❌ No video stream available. Start monitoring first.', 'error');
+                return;
+            }
+            
+            // Clone the video stream to fullscreen
+            const fullscreenVideo = document.getElementById('fullscreen-video');
+            fullscreenVideo.srcObject = video.srcObject;
+            
+            // Update fullscreen info
+            document.getElementById('fullscreen-title').textContent = `👤 ${session.studentName}`;
+            document.getElementById('fullscreen-info').textContent = 
+                `ID: ${session.studentId} | System: ${session.systemNumber} | Login: ${new Date(session.loginTime).toLocaleTimeString()}`;
+            
+            // Show fullscreen modal
+            document.getElementById('fullscreen-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            console.log('🔍 Expanded screen for session:', sessionId);
+            updateStatus(`🔍 Fullscreen mode active for ${session.studentName}`, 'success');
+        }
+        
+        function closeFullscreen() {
+            const fullscreenModal = document.getElementById('fullscreen-modal');
+            const fullscreenVideo = document.getElementById('fullscreen-video');
+            
+            // Hide modal
+            fullscreenModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+            
+            // Clear video stream
+            fullscreenVideo.srcObject = null;
+            
+            console.log('❌ Closed fullscreen mode');
+            updateStatus('❌ Exited fullscreen mode', 'info');
+        }
+        
+        // Keyboard shortcuts for fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const fullscreenModal = document.getElementById('fullscreen-modal');
+                if (fullscreenModal.classList.contains('active')) {
+                    closeFullscreen();
+                }
+            }
+        });
+        
+        // Double-click video to expand
+        document.addEventListener('click', (e) => {
+            if (e.target.tagName === 'VIDEO' && e.target.id !== 'fullscreen-video') {
+                const videoContainer = e.target.closest('.video-container');
+                if (videoContainer) {
+                    const sessionId = videoContainer.id.replace('video-', '');
+                    expandScreen(sessionId);
+                }
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            peerConnections.forEach(pc => pc.close());
+            if (socket) socket.disconnect();
+        });
+    </script>
+</body>
+</html>

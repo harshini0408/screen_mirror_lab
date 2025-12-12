@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Admin Login - Lab Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #3498db, #2c3e50);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 3rem;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s ease infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        .input-group {
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+        
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .error-message {
+            display: none;
+            background: #ffe8e8;
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            animation: shake 0.5s ease;
+        }
+        
+        .error-message.show {
+            display: block;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .success-message {
+            display: none;
+            background: #e8f5e8;
+            border: 2px solid #28a745;
+            color: #28a745;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .security-note {
+            background: #f8f9fa;
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            border-radius: 5px;
+            text-align: left;
+            margin-top: 2rem;
+        }
+        
+        .security-note p {
+            color: #6c757d;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .security-note strong {
+            color: #2c3e50;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #6c757d;
+            user-select: none;
+        }
+        
+        .password-wrapper {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔐</div>
+        <h1>Admin Access</h1>
+        <p class="subtitle">Lab Management System</p>
+        
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+        
+        <form id="loginForm" onsubmit="return handleLogin(event)">
+            <div class="input-group">
+                <label for="passkey">🔑 Enter Admin Passkey</label>
+                <div class="password-wrapper">
+                    <input 
+                        type="password" 
+                        id="passkey" 
+                        name="passkey" 
+                        placeholder="••••••••" 
+                        autocomplete="off"
+                        required
+                        autofocus
+                    >
+                    <span class="toggle-password" onclick="togglePasswordVisibility()">👁️</span>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-login" id="loginBtn">
+                🚀 Access Dashboard
+            </button>
+        </form>
+        
+        <div class="security-note">
+            <p>
+                <strong>🔒 Security Notice:</strong><br>
+                This is a secure admin area. Only authorized personnel with the correct passkey can access the lab management dashboard.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // Admin passkey (hashed for basic security)
+        // Default passkey: "admin123" (change this to your desired passkey)
+        // You can generate a new hash by entering: btoa("your_passkey_here") in browser console
+        const ADMIN_PASSKEY_HASH = 'YWRtaW4xMjM='; // Base64 encoded "admin123"
+        
+        // Alternative: Use a more secure custom passkey
+        // To set your own passkey, replace the hash above with btoa("your_custom_passkey")
+        // Example for "LAB2024": const ADMIN_PASSKEY_HASH = 'TEFCMJAY';
+        
+        let loginAttempts = 0;
+        const MAX_ATTEMPTS = 5;
+        
+        // Check if already authenticated
+        window.addEventListener('load', () => {
+            const isAuthenticated = sessionStorage.getItem('adminAuthenticated');
+            if (isAuthenticated === 'true') {
+                showSuccess('Already authenticated! Redirecting...');
+                setTimeout(() => {
+                    window.location.href = '/admin-dashboard.html';
+                }, 1000);
+            }
+        });
+        
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const passkeyInput = document.getElementById('passkey');
+            const loginBtn = document.getElementById('loginBtn');
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            // Check if max attempts reached
+            if (loginAttempts >= MAX_ATTEMPTS) {
+                showError('Too many failed attempts. Please refresh the page and try again.');
+                return false;
+            }
+            
+            // Get entered passkey
+            const enteredPasskey = passkeyInput.value;
+            
+            // Verify passkey (encode and compare with hash)
+            const enteredHash = btoa(enteredPasskey);
+            
+            if (enteredHash === ADMIN_PASSKEY_HASH) {
+                // Successful authentication
+                loginAttempts = 0;
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                sessionStorage.setItem('authTime', new Date().toISOString());
+                
+                showSuccess('✅ Access Granted! Redirecting to dashboard...');
+                loginBtn.disabled = true;
+                passkeyInput.disabled = true;
+                
+                // Redirect to admin dashboard after short delay
+                setTimeout(() => {
+                    window.location.href = '/admin-dashboard.html';
+                }, 1500);
+                
+                return false;
+            } else {
+                // Failed authentication
+                loginAttempts++;
+                const remainingAttempts = MAX_ATTEMPTS - loginAttempts;
+                
+                if (remainingAttempts > 0) {
+                    showError(`❌ Invalid passkey! ${remainingAttempts} attempt(s) remaining.`);
+                } else {
+                    showError('❌ Maximum attempts reached. Please refresh the page.');
+                    loginBtn.disabled = true;
+                    passkeyInput.disabled = true;
+                }
+                
+                passkeyInput.value = '';
+                passkeyInput.focus();
+                
+                return false;
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+            successDiv.classList.remove('show');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.classList.remove('show');
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+            
+            successDiv.textContent = message;
+            successDiv.classList.add('show');
+            errorDiv.classList.remove('show');
+        }
+        
+        function togglePasswordVisibility() {
+            const passkeyInput = document.getElementById('passkey');
+            const toggleIcon = document.querySelector('.toggle-password');
+            
+            if (passkeyInput.type === 'password') {
+                passkeyInput.type = 'text';
+                toggleIcon.textContent = '👁️‍🗨️';
+            } else {
+                passkeyInput.type = 'password';
+                toggleIcon.textContent = '👁️';
+            }
+        }
+        
+        // Allow Enter key to submit
+        document.getElementById('passkey').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                handleLogin(event);
+            }
+        });
+        
+        // Clear error message when user starts typing
+        document.getElementById('passkey').addEventListener('input', () => {
+            const errorDiv = document.getElementById('errorMessage');
+            if (errorDiv.classList.contains('show')) {
+                errorDiv.classList.remove('show');
+            }
+        });
+    </script>
+</body>
+</html>
