@@ -70,8 +70,7 @@
       "installerHeaderIcon": "assets/icon.ico",
       "deleteAppDataOnUninstall": false,
       "perMachine": false,
-      "allowElevation": true,
-      "include": "build/installer.nsh"
+      "allowElevation": true
     },
     "portable": {
       "artifactName": "${productName}-Portable-${version}.${ext}"

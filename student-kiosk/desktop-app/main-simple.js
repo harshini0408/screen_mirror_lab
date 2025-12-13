@@ -348,6 +348,8 @@ function createTimerWindow(studentName, studentId) {
         const { ipcRenderer } = require('electron');
         
         let startTime = Date.now();
+        let timerInterval = null;
+        
         function updateTimer() {
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
           const hours = String(Math.floor(elapsed / 3600)).padStart(2, '0');
@@ -355,11 +357,25 @@ function createTimerWindow(studentName, studentId) {
           const seconds = String(elapsed % 60).padStart(2, '0');
           document.getElementById('timer').textContent = hours + ':' + minutes + ':' + seconds;
         }
-        setInterval(updateTimer, 1000);
+        
+        timerInterval = setInterval(updateTimer, 1000);
         updateTimer();
+        
+        // Stop timer when window is closing
+        window.addEventListener('beforeunload', () => {
+          if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+          }
+        });
         
         function handleLogout() {
           if (confirm('Are you sure you want to end your session and logout?')) {
+            // Stop timer immediately
+            if (timerInterval) {
+              clearInterval(timerInterval);
+              timerInterval = null;
+            }
             ipcRenderer.send('timer-logout-clicked');
           }
         }
@@ -608,6 +624,10 @@ function setupIPCHandlers() {
       mainWindow.setFullScreen(true);
       
       mainWindow.focus();
+      
+      // 🔄 RELOAD MAIN WINDOW to show login screen
+      console.log('🔄 Reloading main window to show login screen...');
+      mainWindow.reload();
       
       console.log('🔒 System locked after logout');
       
@@ -1158,6 +1178,35 @@ async function performLogout() {
       sessionActive = false;
       currentSession = null;
       isKioskLocked = true;
+      
+      // Close timer window properly
+      if (timerWindow && !timerWindow.isDestroyed()) {
+        timerWindow.setClosable(true);
+        timerWindow.close();
+        timerWindow = null;
+        console.log('⏱️ Timer window closed after logout');
+      }
+      
+      // Restore strict kiosk mode
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setClosable(false);
+        mainWindow.setMinimizable(false);
+        mainWindow.setAlwaysOnTop(true, 'screen-saver');
+        mainWindow.setFullScreen(true);
+        mainWindow.focus();
+        
+        // Reload main window to show login screen
+        console.log('🔄 Reloading main window to show login screen...');
+        mainWindow.reload();
+      }
+      
+      // Re-enable kiosk shortcut blocking
+      try {
+        blockKioskShortcuts();
+        console.log('🔒 Kiosk shortcuts re-registered after logout');
+      } catch (e) {
+        console.error('⚠️ Error re-registering kiosk shortcuts:', e.message || e);
+      }
       
       console.log('✅ Logout completed');
     } catch (error) {
